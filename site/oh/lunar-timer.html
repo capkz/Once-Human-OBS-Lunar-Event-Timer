@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<!-- Google Tag Manager -->
-	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-	new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-	j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-	'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-	})(window,document,'script','dataLayer','GTM-T2WKJR7V');</script>
-	<!-- End Google Tag Manager -->
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-T2WKJR7V');</script>
+  <!-- End Google Tag Manager -->
   <meta charset="UTF-8">
   <title>Lunar Event Countdown</title>
   <!-- Favicon -->
@@ -21,39 +21,34 @@
       height: 100%;
       overflow: hidden;
     }
-
     /* Base container set to a fixed resolution */
     #scaling-container {
-      width: 1920px;   /* Base width */
-      height: 1080px;  /* Base height */
+      width: 1920px;
+      height: 1080px;
       transform-origin: top left;
       position: relative;
     }
-
     /* Container for GIF and text */
     #container {
       position: relative;
       width: 100%;
     }
-
     #bgGif {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-
     /* Fixed width applied here prevents text shifting as content changes */
     #textOverlay {
       position: absolute;
       top: 50%;
       right: 220px;
       transform: translateY(-50%);
-      width: 1200px; /* Fixed width; adjust as needed */
+      width: 1200px;
       color: #fff;
       font-family: 'Cinzel', serif;
       text-align: center;
     }
-
     .countdown {
       font-size: 12em;
       font-weight: 700;
@@ -68,7 +63,6 @@
         -2px  0px 0 #000,
          2px  0px 0 #000;
     }
-
     .message {
       font-size: 7em;
       margin-top: -50px;
@@ -83,9 +77,8 @@
         -2px  0px 0 #000,
          2px  0px 0 #000;
     }
-
     .accent {
-      color: #b22222;
+      color: #d91a1a;
       font-weight: 700;
     }
   </style>
@@ -102,7 +95,7 @@
   <!-- This container scales dynamically -->
   <div id="scaling-container">
     <div id="container">
-      <!-- Replace 'moonOverlay.gif' with your GIF file -->
+      <!-- Initially load the normal GIF without red outline -->
       <img id="bgGif" src="moonOverlay.gif" alt="Moon Overlay" />
       <div id="textOverlay">
         <div class="countdown" id="countdown">Loading...</div>
@@ -112,22 +105,20 @@
   </div>
 
   <script>
-    // Dynamic scaling function
+    // Global variable to track previous event state
+    let prevEventActive = null;
+
     function scaleOverlay() {
       const container = document.getElementById('scaling-container');
-      // Use the base resolution dimensions from the container: 1920 x 1080.
       const scaleX = window.innerWidth / 1920;
       const scaleY = window.innerHeight / 550;
-      // Choose the smaller scale factor to ensure the whole overlay fits.
       const scale = Math.min(scaleX, scaleY);
       container.style.transform = `scale(${scale})`;
     }
-    
-    // Run scaleOverlay on load and on window resize
+
     window.addEventListener('resize', scaleOverlay);
     scaleOverlay();
 
-    // Updated countdown function that considers a previous event if still active
     function updateCountdown() {
       const now = new Date();
       const year = now.getFullYear();
@@ -135,37 +126,40 @@
       const date = now.getDate();
       const currentHour = now.getHours();
 
-      // Candidate for current hour event start
+      // Candidate times for event start
       const candidateCurrent = new Date(year, month, date, currentHour, CONFIG.eventStartMinute, CONFIG.eventStartSecond);
-      // Candidate for previous hour event start
       const candidatePrev = new Date(year, month, date, currentHour - 1, CONFIG.eventStartMinute, CONFIG.eventStartSecond);
 
       let eventStart, eventEnd;
-      
-      // If current time is before the candidate for the current hour,
-      // check if the previous event is still active.
       if (now < candidateCurrent) {
         eventStart = candidatePrev;
         eventEnd = new Date(eventStart.getTime() + 15 * 60 * 1000);
-        // If previous event is not active, then use candidateCurrent.
         if (now >= eventEnd) {
           eventStart = candidateCurrent;
           eventEnd = new Date(eventStart.getTime() + 15 * 60 * 1000);
         }
       } else {
-        // Otherwise, use the candidate for the current hour.
         eventStart = candidateCurrent;
         eventEnd = new Date(eventStart.getTime() + 15 * 60 * 1000);
-        // If the current event has ended, schedule the next event.
         if (now >= eventEnd) {
           eventStart = new Date(year, month, date, currentHour + 1, CONFIG.eventStartMinute, CONFIG.eventStartSecond);
           eventEnd = new Date(eventStart.getTime() + 15 * 60 * 1000);
         }
       }
-      
-      // Determine if the event is active.
+
       const eventActive = now >= eventStart && now < eventEnd;
       const countdownMs = eventActive ? (eventEnd - now) : (eventStart - now);
+
+      // Only update the background image if the eventActive state has changed
+      const bgGif = document.getElementById('bgGif');
+      if (prevEventActive === null || prevEventActive !== eventActive) {
+        if (eventActive) {
+          bgGif.src = "moonOverlay_active.gif";
+        } else {
+          bgGif.src = "moonOverlay.gif";
+        }
+        prevEventActive = eventActive;
+      }
 
       // Convert milliseconds to mm:ss.
       const totalSeconds = Math.floor(countdownMs / 1000);
@@ -181,7 +175,6 @@
         : 'Lunar Event Timer';
     }
 
-    // Update the countdown every second.
     updateCountdown();
     setInterval(updateCountdown, 1000);
   </script>

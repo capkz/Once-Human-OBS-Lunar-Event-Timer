@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Lunar Timer Preview</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    .admin-panel {
+      background: rgba(0,0,0,0.8);
+      padding: 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    label {
+      margin-right: 10px;
+    }
+    input[type="number"] {
+      width: 60px;
+      margin-right: 10px;
+      padding: 5px;
+    }
+    button {
+      padding: 5px 10px;
+      background: #b22222;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      margin-right: 5px;
+      cursor: pointer;
+    }
+    iframe {
+      width: 100%;
+      height: 1080px;
+      border: none;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-panel">
+    <h1>Timer Admin Panel</h1>
+    <div>
+      <label for="minuteInput">Minute:</label>
+      <input type="number" id="minuteInput" min="0" max="59" value="52">
+      <label for="secondInput">Second:</label>
+      <input type="number" id="secondInput" min="0" max="59" value="25">
+    </div>
+    <div style="margin-top:10px;">
+      <button id="defaultBtn">Default</button>
+      <button id="copyLinkBtn">Copy OBS Overlay Link</button>
+    </div>
+  </div>
+  <h2>Preview</h2>
+  <!-- The iframe loads the overlay page with query parameters -->
+  <iframe id="previewFrame" src="lunar-timer.html?minute=52&second=25"></iframe>
+
+  <script>
+    const minuteInput = document.getElementById('minuteInput');
+    const secondInput = document.getElementById('secondInput');
+    const previewFrame = document.getElementById('previewFrame');
+
+    // Update preview iframe based on admin fields
+    function updatePreview() {
+      const minute = parseInt(minuteInput.value, 10) || 0;
+      const second = parseInt(secondInput.value, 10) || 0;
+      const newSrc = `lunar-timer.html?minute=${minute}&second=${second}`;
+      previewFrame.src = newSrc;
+    }
+
+    minuteInput.addEventListener('input', updatePreview);
+    secondInput.addEventListener('input', updatePreview);
+
+    // Reset admin inputs to default values and update preview
+    document.getElementById('defaultBtn').addEventListener('click', () => {
+      minuteInput.value = 52;
+      secondInput.value = 25;
+      updatePreview();
+    });
+
+    // Copy OBS overlay link to clipboard (this link should only show the overlay)
+    document.getElementById('copyLinkBtn').addEventListener('click', () => {
+      const minute = parseInt(minuteInput.value, 10) || 0;
+      const second = parseInt(secondInput.value, 10) || 0;
+      const url = window.location.origin + '/lunar-timer.html?minute=' + minute + '&second=' + second;
+      navigator.clipboard.writeText(url)
+        .then(() => alert('OBS Overlay Link copied: ' + url))
+        .catch(() => alert('Failed to copy link.'));f
+    });
+  </script>
+</body>
+</html>
