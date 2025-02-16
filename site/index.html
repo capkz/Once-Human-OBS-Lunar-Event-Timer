@@ -2,157 +2,145 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Lunar Event Countdown</title>
-  <!-- Favicon -->
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Chaul Linktree</title>
   <style>
-    /* Ensure transparency for OBS */
+    /* Basic reset and font setup */
+    * {
+      box-sizing: border-box;
+    }
     html, body {
-      background: transparent;
       margin: 0;
       padding: 0;
+      width: 100%;
       height: 100%;
+      background: #000;  /* Black background */
+      color: #fff;       /* White text */
+      font-family: "Cinzel", serif;
       overflow: hidden;
-    }
-
-    /* Base container set to a fixed resolution */
-    #scaling-container {
-      width: 1920px;   /* Base width */
-      height: 1080px;  /* Base height */
-      transform-origin: top left;
       position: relative;
     }
 
-    /* Container for GIF and text */
-    #container {
-      position: relative;
-      width: 100%;
-    }
-
-    #bgGif {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* Fixed width applied here prevents text shifting as content changes */
-    #textOverlay {
-      position: absolute;
-      top: 50%;
-      right: 220px;
-      transform: translateY(-50%);
-      width: 1200px; /* Fixed width; adjust as needed */
-      color: #fff;
-      font-family: 'Cinzel', serif;
+    /* Container that centers the linktree content */
+    .linktree-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px 20px;
       text-align: center;
     }
 
-    .countdown {
-      font-size: 12em;
-      font-weight: 700;
+    /* Logo with clip-path to trim top/bottom whitespace (tweak values as needed) */
+    .logo {
+      width: 100%;
+      max-width: 400px;  /* Adjust as desired */
+      object-fit: cover;
+      /* Clip off extra whitespace from top and bottom; adjust inset values as needed */
+      clip-path: inset(30px 0 30px 0);
+      margin-bottom: 30px;
     }
 
-    .message {
-      font-size: 7em;
-      margin-top: -50px;
+    /* Linktree-style buttons */
+    .link-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      background: #b22222;   /* Dark red */
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 1.2em;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #ff0000;   /* Brighter red on hover */
     }
 
-    .accent {
-      color: #b22222;
-      font-weight: 700;
+    /* Footer styling */
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      opacity: 0.7;
+    }
+
+    /* Emote styling for continuous smooth movement */
+    .emote {
+      position: absolute;
+      width: 80px;     /* Adjust size as needed */
+      height: auto;
+      object-fit: contain;
+      pointer-events: none; /* Allow clicks to pass through */
+      /* Start at a default position */
+      left: 50%;
+      top: 50%;
     }
   </style>
   <!-- Gothic font -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
-  <!-- Load the configuration file -->
-  <script src="config.js"></script>
 </head>
 <body>
-  <!-- This container scales dynamically -->
-  <div id="scaling-container">
-    <div id="container">
-      <!-- Replace 'moonOverlay.gif' with your GIF file -->
-      <img id="bgGif" src="moonOverlay.gif" alt="Moon Overlay" />
-      <div id="textOverlay">
-        <div class="countdown" id="countdown">Loading...</div>
-        <div class="message" id="message"></div>
-      </div>
+
+  <!-- Emote image that will fly continuously -->
+  <!-- Replace 'emote.png' with your actual emote file name/path -->
+  <img src="emote.png" alt="Emote" class="emote" id="emoteImg">
+
+  <div class="linktree-container">
+    <!-- Replace 'logo.png' with your actual logo file name/path -->
+    <img src="logo.png" alt="Once Human Logo" class="logo">
+
+    <div class="link-list">
+      <a href="https://www.twitch.tv/chaulvt" target="_blank" class="btn">Watch me on Twitch</a>
+      <a href="https://www.tiktok.com/@chaul_tv" target="_blank" class="btn">Follow me on TikTok</a>
+      <a href="/lunar-timer" class="btn">Check Lunar Timer</a>
     </div>
+
+    <footer>&copy; 2025 Chaul. All Rights Reserved.</footer>
   </div>
 
   <script>
-    // Dynamic scaling function
-    function scaleOverlay() {
-      const container = document.getElementById('scaling-container');
-      // Use the base resolution dimensions from the container: 1920 x 1080.
-      const scaleX = window.innerWidth / 1920;
-      const scaleY = window.innerHeight / 550;
-      // Choose the smaller scale factor to ensure the whole overlay fits.
-      const scale = Math.min(scaleX, scaleY);
-      container.style.transform = `scale(${scale})`;
-    }
-    
-    // Run scaleOverlay on load and on window resize
-    window.addEventListener('resize', scaleOverlay);
-    scaleOverlay();
+    // Function to smoothly fly the emote to a new random position.
+    function flyEmote() {
+      const emote = document.getElementById('emoteImg');
 
-    // Updated countdown function that considers a previous event if still active
-    function updateCountdown() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth();
-      const date = now.getDate();
-      const currentHour = now.getHours();
+      // Get current computed positions (in percent)
+      const currentLeft = parseFloat(getComputedStyle(emote).left) || 50;
+      const currentTop = parseFloat(getComputedStyle(emote).top) || 50;
 
-      // Candidate for current hour event start
-      const candidateCurrent = new Date(year, month, date, currentHour, CONFIG.eventStartMinute, CONFIG.eventStartSecond);
-      // Candidate for previous hour event start
-      const candidatePrev = new Date(year, month, date, currentHour - 1, CONFIG.eventStartMinute, CONFIG.eventStartSecond);
+      // Choose new random destination percentages (0% to 90% to keep it mostly onscreen)
+      const newLeft = Math.random() * 90;
+      const newTop = Math.random() * 90;
 
-      let eventStart, eventEnd;
-      
-      // If current time is before the candidate for the current hour,
-      // check if the previous event is still active.
-      if (now < candidateCurrent) {
-        eventStart = candidatePrev;
-        eventEnd = new Date(eventStart.getTime() + 15 * 60 * 1000);
-        // If previous event is not active, then use candidateCurrent.
-        if (now >= eventEnd) {
-          eventStart = candidateCurrent;
-          eventEnd = new Date(eventStart.getTime() + 15 * 60 * 1000);
-        }
-      } else {
-        // Otherwise, use the candidate for the current hour.
-        eventStart = candidateCurrent;
-        eventEnd = new Date(eventStart.getTime() + 15 * 60 * 1000);
-        // If the current event has ended, schedule the next event.
-        if (now >= eventEnd) {
-          eventStart = new Date(year, month, date, currentHour + 1, CONFIG.eventStartMinute, CONFIG.eventStartSecond);
-          eventEnd = new Date(eventStart.getTime() + 15 * 60 * 1000);
-        }
-      }
-      
-      // Determine if the event is active.
-      const eventActive = now >= eventStart && now < eventEnd;
-      const countdownMs = eventActive ? (eventEnd - now) : (eventStart - now);
+      // Calculate approximate distance (in percentage units)
+      const dx = newLeft - currentLeft;
+      const dy = newTop - currentTop;
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-      // Convert milliseconds to mm:ss.
-      const totalSeconds = Math.floor(countdownMs / 1000);
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      const formatted =
-        (minutes < 10 ? '0' + minutes : minutes) + ':' +
-        (seconds < 10 ? '0' + seconds : seconds);
+      // Increase the speed to 50 percentage-points per second for faster movement
+      const speed = 50; // percent per second
+      const duration = distance / speed; // duration in seconds
 
-      document.getElementById('countdown').textContent = formatted;
-      document.getElementById('message').innerHTML = eventActive
-        ? 'Lunar Event <span class="accent">Active</span>'
-        : 'Lunar Event Time';
+      // Apply new positions with a CSS transition
+      emote.style.transition = `left ${duration}s linear, top ${duration}s linear`;
+      emote.style.left = newLeft + "%";
+      emote.style.top = newTop + "%";
     }
 
-    // Update the countdown every second.
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
+    // When the transition ends, trigger the next move
+    const emote = document.getElementById('emoteImg');
+    emote.addEventListener('transitionend', flyEmote);
+
+    // Start the first flight after the page loads
+    window.addEventListener('DOMContentLoaded', () => {
+      flyEmote();
+    });
   </script>
 </body>
 </html>
