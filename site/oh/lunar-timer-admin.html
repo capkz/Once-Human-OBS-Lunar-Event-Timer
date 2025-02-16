@@ -67,14 +67,12 @@
     const previewFrame = document.getElementById('previewFrame');
 
     // Update preview iframe based on admin fields
-	function updatePreview() {
-	  const minute = parseInt(minuteInput.value, 10) || 0;
-	  const second = parseInt(secondInput.value, 10) || 0;
-	  const cacheBuster = new Date().getTime(); // unique value
-	  const newSrc = `lunar-timer.html?minute=${minute}&second=${second}&cb=${cacheBuster}`;
-	  previewFrame.src = newSrc;
-	}
-
+    function updatePreview() {
+      const minute = parseInt(minuteInput.value, 10) || 0;
+      const second = parseInt(secondInput.value, 10) || 0;
+      const newSrc = `lunar-timer.html?minute=${minute}&second=${second}`;
+      previewFrame.src = newSrc;
+    }
 
     minuteInput.addEventListener('input', updatePreview);
     secondInput.addEventListener('input', updatePreview);
